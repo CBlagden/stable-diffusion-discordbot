@@ -22,7 +22,7 @@ async def dream(ctx, prompt: str):
     with torch.autocast("cuda"):
         image = pipe(prompt)["sample"]
 
-    grid = image_grid(image, rows=2, cols=1)
+    grid = image_grid(image, rows=1, cols=2)
     filename = os.path.join("outputs/{}.png".format(prompt[0].replace(" ", "_")))
     grid.save(filename)
     
@@ -37,7 +37,9 @@ async def on_ready():
                                                    torch_dtype=torch.float16,
                                                    use_auth_token=True,
                                                    guidance_scale=7.5,
-                                                   num_inference_steps=100)  
+                                                   num_inference_steps=5000)  
+    def dummy(images, **kwargs): return images, False 
+    pipe.safety_checker = dummy
     pipe = pipe.to('cuda')
    
 
