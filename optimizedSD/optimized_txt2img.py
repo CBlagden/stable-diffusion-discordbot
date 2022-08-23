@@ -13,6 +13,7 @@ from pytorch_lightning import seed_everything
 from torch import autocast
 from contextlib import contextmanager, nullcontext
 from ldm.util import instantiate_from_config
+from ldm.models.diffusion.plms import PLMSSampler
 
 
 def chunk(it, size):
@@ -65,7 +66,11 @@ parser.add_argument(
     default=50,
     help="number of ddim sampling steps",
 )
-
+parser.add_argument(
+        "--plms",
+        action='store_true',
+        help="use plms sampling",
+)
 parser.add_argument(
     "--fixed_code",
     action='store_true',

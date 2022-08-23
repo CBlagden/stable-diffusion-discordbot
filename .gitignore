@@ -4,3 +4,4 @@ latent
 *__pycache__*
 latent_diffusion.egg-info
 *.ckpt
+*.out

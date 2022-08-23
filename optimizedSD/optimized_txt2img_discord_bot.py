@@ -12,7 +12,9 @@ import time
 from pytorch_lightning import seed_everything
 from torch import autocast
 from contextlib import contextmanager, nullcontext
+from ldm.models.diffusion.ddim import DDIMSampler
 from ldm.util import instantiate_from_config
+from ldm.models.diffusion.plms import PLMSSampler
 
 import discord
 from discord.ext import commands
@@ -86,6 +88,11 @@ def main():
         type=int,
         default=50,
         help="number of ddim sampling steps",
+    )
+    parser.add_argument(
+        "--plms",
+        action='store_true',
+        help="use plms sampling",
     )
     parser.add_argument(
         "--fixed_code",
@@ -275,8 +282,12 @@ def sample(outpath, prompt: str):
                     while(torch.cuda.memory_allocated()/1e6 >= mem):
                         time.sleep(1)
 
+                    if opt.plms:
+                        sampler = PLMSSampler(model)
+                    else:
+                        sampler = DDIMSampler(model)
 
-                    samples_ddim = model.sample(S=opt.ddim_steps,
+                    samples_ddim, _ = sampler.sample(S=opt.ddim_steps,
                                     conditioning=c,
                                     batch_size=opt.n_samples,
                                     shape=shape,
@@ -333,8 +344,7 @@ async def dream(ctx, prompt: str):
     outpath = 'outputs/discordoutputs'
     sample('outputs/discordoutputs', prompt)
     filename = os.path.join(outpath, "samples", "_".join(prompt.split())[:255], "00000.png")
-    await ctx.send(file=discord.File(filename))
-    # await ctx.send(prompt)
+    await ctx.reply(file=discord.File(filename))
 
 @bot.event
 async def on_ready():
